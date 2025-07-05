@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="پنل هواشناسی هوشمند با قابلیت پیش‌بینی وضعیت آب‌وهوا - طراحی شده توسط مهدی شیرازی">
+    <meta name="keywords" content="هواشناسی,پیش‌بینی آب‌وهوا,طراحی وب,جاوااسکریپت,هوش مصنوعی">
+    <title>پنل هوشمند آب‌وهوا | طراحی مهدی شیرازی</title>
+    <style>
+        :root {
+            --primary: #1e88e5;
+            --secondary: #0d47a1;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --light: #f5f5f5;
+            --dark: #212121;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 2rem 0;
+            animation: fadeIn 1s ease;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .search-box {
+            display: flex;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        input, button {
+            padding: 12px 20px;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+        }
+        
+        input {
+            flex: 1;
+            border-radius: 50px 0 0 50px;
+            padding-right: 20px;
+        }
+        
+        button {
+            background: var(--warning);
+            color: var(--dark);
+            border-radius: 0 50px 50px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #ffac33;
+        }
+        
+        .weather-status {
+            text-align: center;
+            padding: 2rem 0;
+        }
+        
+        #weather-icon {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+        }
+        
+        #temperature {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 1rem 0;
+            text-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        }
+        
+        #description {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .detail-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .detail-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .forecast {
+            display: flex;
+            overflow-x: auto;
+            gap: 1rem;
+            padding: 1rem 0;
+        }
+        
+        .forecast-item {
+            min-width: 120px;
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            #temperature { font-size: 3rem; }
+            .details { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>☀️ پنل هوشمند آب‌وهوا</h1>
+            <p>پیش‌بینی دقیق وضعیت آب‌وهوا با استفاده از فناوری‌های پیشرفته</p>
+        </header>
+        
+        <main>
+            <div class="card">
+                <div class="search-box">
+                    <input type="text" id="city-input" placeholder="نام شهر خود را وارد کنید..." value="تهران">
+                    <button id="search-btn">جستجو</button>
+                </div>
+            </div>
+            
+            <div class="card weather-status">
+                <div id="weather-icon"></div>
+                <div id="temperature">24°C</div>
+                <div id="description">آسمان صاف</div>
+                
+                <div class="details">
+                    <div class="detail-card">
+                        <div>رطوبت</div>
+                        <div id="humidity">45%</div>
+                    </div>
+                    <div class="detail-card">
+                        <div>سرعت باد</div>
+                        <div id="wind-speed">12 km/h</div>
+                    </div>
+                    <div class="detail-card">
+                        <div>فشار هوا</div>
+                        <div id="pressure">1015 hPa</div>
+                    </div>
+                    <div class="detail-card">
+                        <div>حداکثر دما</div>
+                        <div id="temp-max">26°C</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>پیش‌بینی 5 روز آینده</h2>
+                <div class="forecast" id="forecast-container">
+                    <!-- Forecast items will be added here by JavaScript -->
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>طراحی و توسعه توسط مهدی شیرازی | شماره تماس: 09031701895</p>
+            <p>این پروژه کاملاً رایگان و متن‌باز می‌باشد</p>
+        </footer>
+    </div>
+
+    <script>
+        // API Configuration (Free and no API key required)
+        const API_URL = 'https://api.open-meteo.com/v1/forecast';
+        
+        // DOM Elements
+        const cityInput = document.getElementById('city-input');
+        const searchBtn = document.getElementById('search-btn');
+        const weatherIcon = document.getElementById('weather-icon');
+        const temperature = document.getElementById('temperature');
+        const description = document.getElementById('description');
+        const humidity = document.getElementById('humidity');
+        const windSpeed = document.getElementById('wind-speed');
+        const pressure = document.getElementById('pressure');
+        const tempMax = document.getElementById('temp-max');
+        const forecastContainer = document.getElementById('forecast-container');
+        
+        // Weather Icons Mapping
+        const weatherIcons = {
+            'clear': '☀️',
+            'cloud': '☁️',
+            'rain': '🌧️',
+            'snow': '❄️',
+            'thunderstorm': '⛈️',
+            'drizzle': '🌦️',
+            'mist': '🌫️'
+        };
+        
+        // Initialize with Tehran data
+        document.addEventListener('DOMContentLoaded', () => {
+            getWeatherData('tehran');
+        });
+        
+        // Search button event
+        searchBtn.addEventListener('click', () => {
+            const city = cityInput.value.trim();
+            if (city) {
+                getWeatherData(city);
+            }
+        });
+        
+        // Get weather data from API
+        async function getWeatherData(city) {
+            try {
+                // For demo purposes - in real app use coordinates based on city
+                const response = await fetch(`${API_URL}?latitude=35.69&longitude=51.39&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m,pressure_msl&daily=weathercode,temperature_2m_max&timezone=auto`);
+                const data = await response.json();
+                
+                // Update current weather
+                updateCurrentWeather(data);
+                
+                // Update forecast
+                updateForecast(data);
+                
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                alert('خطا در دریافت اطلاعات آب‌وهوا. لطفاً دوباره تلاش کنید.');
+            }
+        }
+        
+        // Update current weather UI
+        function updateCurrentWeather(data) {
+            const current = data.current_weather;
+            const hourly = data.hourly;
+            
+            // Get current hour index
+            const now = new Date();
+            const currentHour = now.getHours();
+            
+            // Update main values
+            temperature.textContent = `${current.temperature}°C`;
+            windSpeed.textContent = `${current.windspeed} km/h`;
+            
+            // Get additional data from hourly
+            humidity.textContent = `${hourly.relativehumidity_2m[currentHour]}%`;
+            pressure.textContent = `${hourly.pressure_msl[currentHour]} hPa`;
+            
+            // Get max temperature for today
+            tempMax.textContent = `${data.daily.temperature_2m_max[0]}°C`;
+            
+            // Update weather description and icon
+            const weatherCode = current.weathercode;
+            let weatherDesc = '';
+            let weatherType = 'clear';
+            
+            // Simplified weather code mapping
+            if (weatherCode < 20) {
+                weatherDesc = 'آسمان صاف';
+                weatherType = 'clear';
+            } else if (weatherCode < 40) {
+                weatherDesc = 'نیمه ابری';
+                weatherType = 'cloud';
+            } else if (weatherCode < 70) {
+                weatherDesc = 'بارانی';
+                weatherType = 'rain';
+            } else {
+                weatherDesc = 'برفی';
+                weatherType = 'snow';
+            }
+            
+            description.textContent = weatherDesc;
+            weatherIcon.textContent = weatherIcons[weatherType];
+        }
+        
+        // Update forecast UI
+        function updateForecast(data) {
+            forecastContainer.innerHTML = '';
+            
+            // Get daily forecast data
+            const daily = data.daily;
+            
+            // Create forecast items for next 5 days
+            for (let i = 1; i <= 5; i++) {
+                const date = new Date(daily.time[i]);
+                const day = date.toLocaleDateString('fa-IR', { weekday: 'long' });
+                const maxTemp = daily.temperature_2m_max[i];
+                
+                const weatherCode = daily.weathercode[i];
+                let weatherType = 'clear';
+                
+                if (weatherCode > 40) weatherType = 'rain';
+                if (weatherCode > 60) weatherType = 'snow';
+                
+                const forecastItem = document.createElement('div');
+                forecastItem.className = 'forecast-item';
+                forecastItem.innerHTML = `
+                    <div>${day}</div>
+                    <div style="font-size: 2rem;">${weatherIcons[weatherType]}</div>
+                    <div>${maxTemp}°C</div>
+                `;
+                
+                forecastContainer.appendChild(forecastItem);
+            }
+        }
+    </script>
+</body>
+</html>
